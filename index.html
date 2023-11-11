@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://unpkg.com/delaunator@5.0.0/delaunator.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="canvas.js"></script>
+    <script src="graph.js"></script>
+    <script src="dungeon.js"></script>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="800" height="800"></canvas>
+    <script>
+      const canvas = new Canvas(document.getElementById("canvas"));
+      const graph = new Graph();
+      const dungeon = new Dungeon(graph, {
+        rooms: 45,
+        mainRooms: 45,
+        size: {
+          dungeon: {
+            width: 800,
+            height: 800
+          },
+          room: {
+            minWidth: 30,
+            maxWidth: 80,
+            minHeight: 30,
+            maxHeight: 80
+          }
+        }
+      });
+
+      dungeon.generateRooms();
+
+      for (let mainRoom of dungeon.mainRooms) {
+        graph.addVertex(mainRoom);
+      }
+
+      const main = async () => {
+        if (canvas.allObjectsAsleep) {
+          graph.generateDelaunay();
+          graph.generateMST();
+          for (let edge of graph.edges) {
+            canvas.drawEdge(edge);
+          }
+          return;
+        }
+
+        canvas.draw(dungeon.rooms);
+        canvas.update(dungeon.rooms);
+        requestAnimationFrame(main);
+      };
+
+      main();
+    </script>
+  </body>
+</html>
